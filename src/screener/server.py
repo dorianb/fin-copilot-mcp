@@ -7,19 +7,21 @@ from typing import Any
 
 from mcp.server import MCPServer
 
-from crazus.screening import (
+from screener.screening import (
     DISCLAIMER,
     STYLE_WEIGHTS,
     fetch_news,
     fetch_quote,
+    get_dividends as screening_get_dividends,
     score_one,
     screen_tickers,
     search_tickers,
 )
-from crazus.universes import UNIVERSES, resolve_universe
-from crazus.portfolio import analyze_portfolio, parse_boursobank_csv
+from screener.universes import UNIVERSES, resolve_universe
+from screener.portfolio import analyze_portfolio, parse_boursobank_csv
+from screener.bankin import analyze_bankin_file
 
-mcp = MCPServer("crazus")
+mcp = MCPServer("screener")
 
 
 def _json(payload: Any) -> str:
@@ -71,6 +73,20 @@ def get_news(ticker: str, limit: int = 8) -> str:
     limit = max(1, min(limit, 15))
     symbol = ticker.strip().upper()
     return _json({"ticker": symbol, "news": fetch_news(symbol, limit), "disclaimer": DISCLAIMER})
+
+
+@mcp.tool()
+def get_dividends(ticker: str) -> str:
+    """Récupère les dividendes passés et futurs pour un ticker.
+
+    Args:
+        ticker: Symbole Yahoo Finance (ex. MC.PA, AAPL, NVDA).
+
+    Returns:
+        Dividendes passés et futurs avec leurs dates et montants.
+    """
+    symbol = ticker.strip().upper()
+    return _json(screening_get_dividends(symbol))
 
 
 @mcp.tool()
@@ -135,7 +151,7 @@ def screen_promising(
     return _json(payload)
 
 
-@mcp.resource("crazus://methodology")
+@mcp.resource("screener://methodology")
 def methodology() -> str:
     """Explique le score et ses limites."""
     return _json(
@@ -190,6 +206,58 @@ def analyze_my_portfolio(
     
     try:
         result = analyze_portfolio(path, style=style, benchmark_universe=benchmark_universe)
+        return _json(result)
+    except Exception as exc:
+        return _json({
+            "error": str(exc),
+            "disclaimer": DISCLAIMER,
+        })
+
+
+@mcp.tool()
+def analyze_my_bankin(
+    file_path: str,
+    existing_investments: float = 0.0,
+    emergency_fund: float = 0.0,
+    initial_balance: float = 0.0,
+) -> str:
+    """Analyse les transactions bancaires Bankin et propose des recommandations de placement.
+
+    Analyse vos flux financiers (dépenses et entrées d'argent) à partir d'un export CSV Bankin
+    et génère des conseils personnalisés pour optimiser vos placements :
+    - Constitution d'un fonds d'urgence (Livret A)
+    - Investissement en PEA (Plan d'Épargne en Actions)
+    - Investissement en PER (Plan d'Épargne Retraite)
+    - Suggestions de SCPI pour diversification immobilière
+
+    Args:
+        file_path: Chemin vers le fichier CSV d'export Bankin
+                   (ex: exports/bankin/export_banks_2026-01-01_2026-09-30.csv).
+        existing_investments: Montant déjà investi (pour calculer le plafond PEA restant).
+        emergency_fund: Montant déjà sur votre fonds d'urgence (Livret A, etc.).
+        initial_balance: Solde initial au début de la période (pour estimation du solde courant).
+    """
+    import os
+    from pathlib import Path
+    
+    # Convert relative path to absolute if needed
+    path = Path(file_path)
+    if not path.is_absolute():
+        path = Path.cwd() / path
+    
+    if not path.exists():
+        return _json({
+            "error": f"Fichier introuvable: {path}",
+            "disclaimer": DISCLAIMER,
+        })
+    
+    try:
+        result = analyze_bankin_file(
+            path,
+            existing_investments=existing_investments,
+            emergency_fund=emergency_fund,
+            initial_balance=initial_balance
+        )
         return _json(result)
     except Exception as exc:
         return _json({

@@ -14,7 +14,7 @@ from typing import Any
 import pandas as pd
 import yfinance as yf
 
-_cache_dir = Path(tempfile.gettempdir()) / f"crazus-yf-{os.getpid()}"
+_cache_dir = Path(tempfile.gettempdir()) / f"screener-yf-{os.getpid()}"
 _cache_dir.mkdir(parents=True, exist_ok=True)
 yf.set_tz_cache_location(str(_cache_dir))
 
@@ -329,6 +329,48 @@ def fetch_news(ticker: str, limit: int = 8) -> list[dict[str, Any]]:
         pub = content.get("pubDate") or entry.get("providerPublishTime")
         items.append({"title": title, "url": url, "published": pub})
     return items
+
+
+def get_dividends(ticker: str) -> dict[str, Any]:
+    """Récupère les dividendes passés pour un ticker.
+    
+    Args:
+        ticker: Symbole Yahoo Finance (ex. MC.PA, AAPL, NVDA).
+    
+    Returns:
+        Un dictionnaire avec les dividendes passés et un message pour les futurs (non disponibles via yfinance).
+    """
+    stock = yf.Ticker(ticker)
+    dividends_history = {}
+    
+    try:
+        with _no_stdout():
+            # Récupération des dividendes passés
+            history = stock.dividends
+            if history is not None and not history.empty:
+                dividends_history = {
+                    str(date.date()): float(amount)
+                    for date, amount in history.items()
+                }
+    except Exception as exc:
+        return {
+            "ticker": ticker,
+            "error": f"Impossible de récupérer les dividendes: {exc}",
+            "dividends_history": {},
+            "dividends_future": {
+                "note": "Les dividendes futurs ne sont pas disponibles via l'API yfinance. Utilisez une source tierce (ex: site de l'entreprise, Bloomberg)."
+            },
+            "disclaimer": DISCLAIMER,
+        }
+    
+    return {
+        "ticker": ticker,
+        "dividends_history": dividends_history,
+        "dividends_future": {
+            "note": "Les dividendes futurs ne sont pas disponibles via l'API yfinance. Utilisez une source tierce (ex: site de l'entreprise, Bloomberg)."
+        },
+        "disclaimer": DISCLAIMER,
+    }
 
 
 def search_tickers(query: str, limit: int = 8) -> list[dict[str, Any]]:

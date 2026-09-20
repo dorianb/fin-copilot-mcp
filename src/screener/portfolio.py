@@ -1,4 +1,4 @@
-"""Analyse de portefeuille et conseils de positionnement basés sur le scoring Crazus."""
+"""Analyse de portefeuille et conseils de positionnement basés sur le scoring composite."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import math
 from pathlib import Path
 from typing import Any
 
-from crazus.screening import DISCLAIMER, STYLE_WEIGHTS, score_one, screen_tickers
+from screener.screening import DISCLAIMER, STYLE_WEIGHTS, score_one, screen_tickers
 
 
 def _parse_french_number(value: str) -> float | None:
@@ -99,7 +99,7 @@ def get_yahoo_ticker_from_isin(isin: str) -> str | None:
     This is a simplified mapping. For a complete solution, you would need
     a comprehensive ISIN-to-symbol mapping or use an API.
     """
-    # Known mappings from the user's portfolio
+    # Common ISIN to ticker mappings
     isin_to_ticker = {
         "FR0012757854": "SPIE.PA",      # SPIE
         "LU1829219390": None,           # AMUNDI EURO STOXX BANKS ETF ACC - ETF, no direct ticker
@@ -147,7 +147,7 @@ def analyze_position(portfolio_position: dict[str, Any], style: str = "balanced"
         }
     
     try:
-        # Get the Crazus score for this ticker
+        # Get the composite score for this ticker
         score_data = score_one(ticker, style=style)
         
         if "error" in score_data:
@@ -365,7 +365,7 @@ def analyze_portfolio(
     benchmark_data = None
     if benchmark_universe:
         try:
-            from crazus.universes import resolve_universe
+            from screener.universes import resolve_universe
             benchmark_tickers = resolve_universe(benchmark_universe, None)
             if benchmark_tickers:
                 benchmark_data = screen_tickers(

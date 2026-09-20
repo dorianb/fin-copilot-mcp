@@ -1,4 +1,4 @@
-from crazus.screening import composite_score, score_growth, score_momentum, score_quality, score_valuation
+from screener.screening import composite_score, score_growth, score_momentum, score_quality, score_valuation
 
 
 def test_momentum_rewards_positive_returns():

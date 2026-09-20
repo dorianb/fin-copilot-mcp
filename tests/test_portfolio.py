@@ -3,7 +3,7 @@
 from pathlib import Path
 import tempfile
 
-from crazus.portfolio import (
+from screener.portfolio import (
     parse_boursobank_csv,
     _parse_french_number,
     _parse_french_integer,
@@ -41,8 +41,8 @@ class TestBoursobankCSVParsing:
 
     def test_parse_csv(self):
         csv_content = """name;isin;quantity;buyingPrice;lastPrice;intradayVariation;amount;amountVariation;variation
-SPIE;FR0012757854;11,00;34,57;43,72;-0,91;480,92;100,60;26,45
-AIRBUS;NL0000235190;2,00;170,43;193,38;-1,08;386,76;45,90;13,47
+TESTCORP;FR0000000001;100,00;10,00;12,50;-0,50;1250,00;250,00;25,00
+DEMO SA;NL0000000002;50,00;20,00;22,00;-1,00;1100,00;100,00;10,00
 """
         with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, encoding='utf-8') as f:
             f.write(csv_content)
@@ -52,28 +52,28 @@ AIRBUS;NL0000235190;2,00;170,43;193,38;-1,08;386,76;45,90;13,47
             
             assert len(positions) == 2
             
-            # Check SPIE position
-            spie = positions[0]
-            assert spie["name"] == "SPIE"
-            assert spie["isin"] == "FR0012757854"
-            assert spie["quantity"] == 11
-            assert spie["buying_price"] == 34.57
-            assert spie["last_price"] == 43.72
-            assert spie["intraday_variation"] == -0.91
-            assert spie["current_value"] == 43.72 * 11
-            assert spie["total_cost"] == 34.57 * 11
+            # Check first position
+            first = positions[0]
+            assert first["name"] == "TESTCORP"
+            assert first["isin"] == "FR0000000001"
+            assert first["quantity"] == 100
+            assert first["buying_price"] == 10.0
+            assert first["last_price"] == 12.5
+            assert first["intraday_variation"] == -0.5
+            assert first["current_value"] == 12.5 * 100
+            assert first["total_cost"] == 10.0 * 100
             
-            # Check AIRBUS position
-            airbus = positions[1]
-            assert airbus["name"] == "AIRBUS"
-            assert airbus["isin"] == "NL0000235190"
-            assert airbus["quantity"] == 2
-            assert airbus["buying_price"] == 170.43
-            assert airbus["last_price"] == 193.38
+            # Check second position
+            second = positions[1]
+            assert second["name"] == "DEMO SA"
+            assert second["isin"] == "NL0000000002"
+            assert second["quantity"] == 50
+            assert second["buying_price"] == 20.0
+            assert second["last_price"] == 22.0
 
     def test_parse_csv_with_etf(self):
         csv_content = """name;isin;quantity;buyingPrice;lastPrice;intradayVariation;amount;amountVariation;variation
-AMUNDI EURO STOXX BANKS ETF ACC;LU1829219390;1,00;277,38;395,00;-2,31;395,00;117,62;42,40
+SYNTHETIC ETF;LU0000000003;10,00;50,00;55,00;-1,00;550,00;50,00;10,00
 """
         with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, encoding='utf-8') as f:
             f.write(csv_content)
@@ -82,7 +82,7 @@ AMUNDI EURO STOXX BANKS ETF ACC;LU1829219390;1,00;277,38;395,00;-2,31;395,00;117
             positions = parse_boursobank_csv(f.name)
             
             assert len(positions) == 1
-            assert positions[0]["name"] == "AMUNDI EURO STOXX BANKS ETF ACC"
+            assert positions[0]["name"] == "SYNTHETIC ETF"
 
 
 class TestTickerMapping:

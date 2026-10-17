@@ -283,7 +283,7 @@ def build_demo() -> gr.Blocks:
 
 
 def main() -> None:
-    build_demo().launch(theme=gr.themes.Soft())
+    build_demo().launch(theme=gr.themes.Soft(), mcp_server=True)
 
 
 if __name__ == "__main__":

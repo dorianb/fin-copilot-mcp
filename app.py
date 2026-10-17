@@ -22,4 +22,4 @@ from screener.server import build_demo
 demo = build_demo()
 
 if __name__ == "__main__":
-    demo.launch(theme=gr.themes.Soft())
+    demo.launch(theme=gr.themes.Soft(), mcp_server=True)

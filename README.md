@@ -1,3 +1,14 @@
+---
+title: Screener
+emoji: 📈
+colorFrom: blue
+colorTo: indigo
+sdk: gradio
+sdk_version: "6.30.0"
+app_file: src/screener/server.py
+pinned: false
+---
+
 # Screener
 
 Application web [Gradio](https://gradio.app) qui s'appuie sur [yfinance](https://github.com/ranaroussi/yfinance) pour classer des valeurs boursières selon un score composite, analyser un portefeuille Boursobank et recommander des placements a partir d'un export Bankin.

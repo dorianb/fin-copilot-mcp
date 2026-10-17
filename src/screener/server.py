@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import gradio as gr
+import spaces
 
 from screener.screening import (
     DISCLAIMER,
@@ -43,6 +44,7 @@ def _resolve_path(file_obj: Any) -> Path | None:
     return path if path.exists() else None
 
 
+@spaces.GPU
 def screen_promising(
     universe: str,
     custom_tickers: str,
@@ -63,11 +65,13 @@ def screen_promising(
     return _json(payload)
 
 
+@spaces.GPU
 def analyze_ticker(ticker: str, style: str) -> str:
     """Score détaillé d'une valeur (momentum, qualité, croissance, valorisation, analystes)."""
     return _json(score_one(ticker.strip().upper(), style=style.strip().lower()))
 
 
+@spaces.GPU
 def compare_tickers(tickers: str, style: str) -> str:
     """Compare et classe plusieurs tickers selon le même score."""
     cleaned = [t.strip().upper() for t in (tickers or "").split(",") if t.strip()]
@@ -100,6 +104,7 @@ def search_ticker(query: str, limit: int) -> str:
     return _json({"query": query, "results": search_tickers(query, limit), "disclaimer": DISCLAIMER})
 
 
+@spaces.GPU
 def analyze_my_portfolio(file_obj: Any, style: str, benchmark_universe: str | None) -> str:
     """Analyse un portefeuille Boursobank et donne des conseils achat/vente/conservation."""
     path = _resolve_path(file_obj)
@@ -113,6 +118,7 @@ def analyze_my_portfolio(file_obj: Any, style: str, benchmark_universe: str | No
         return _json({"error": str(exc), "disclaimer": DISCLAIMER})
 
 
+@spaces.GPU
 def analyze_my_bankin(
     file_obj: Any,
     existing_investments: float,

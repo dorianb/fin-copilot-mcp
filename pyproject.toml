@@ -5,7 +5,7 @@ description = "Serveur MCP yfinance pour identifier des valeurs boursières prom
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "mcp>=1.12.0",
+    "gradio>=4.44.0",
     "yfinance>=0.2.54",
     "pandas>=2.2.0",
 ]

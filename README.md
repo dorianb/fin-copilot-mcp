@@ -1,12 +1,12 @@
 # Screener
 
-Serveur MCP (Model Context Protocol) qui s'appuie sur [yfinance](https://github.com/ranaroussi/yfinance) pour classer des valeurs boursières selon un score composite, analyser un portefeuille Boursobank et recommander des placements a partir d'un export Bankin.
+Application web [Gradio](https://gradio.app) qui s'appuie sur [yfinance](https://github.com/ranaroussi/yfinance) pour classer des valeurs boursières selon un score composite, analyser un portefeuille Boursobank et recommander des placements a partir d'un export Bankin.
 
 > **Avertissement.** Ceci n'est pas un conseil en investissement. Le score agrège du momentum, de la qualité fondamentale, de la croissance, de la valorisation et le consensus analystes Yahoo. Les donnees peuvent être incomplètes, retardées ou erronées. Les performances passées ne préjugent pas des performances futures.
 
-## Outils MCP
+## Outils (onglets Gradio)
 
-| Outil | Rôle |
+| Onglet | Rôle |
 | --- | --- |
 | `screen_promising` | Top N d'un univers (`cac40`, `sp100`, `nasdaq_mega`) ou d'une liste custom |
 | `analyze_ticker` | Score détaillé d'un symbole |
@@ -19,7 +19,7 @@ Serveur MCP (Model Context Protocol) qui s'appuie sur [yfinance](https://github.
 | `analyze_my_portfolio` | Analyse d'un portefeuille Boursobank avec conseils achat/vente/conservation |
 | `analyze_my_bankin` | Analyse des flux bancaires Bankin avec recommandations de placement (PEA, PER, Livret A) |
 
-Ressource : `screener://methodology` — décrit le score, ses composantes et ses limites.
+Ressource : onglet **Méthodologie** — décrit le score, ses composantes et ses limites.
 
 ## Score composite
 
@@ -115,13 +115,15 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-## Lancer le serveur
+## Lancer l'application
 
-Transport stdio (utilisé par Cursor et autres clients MCP) :
+Localement (CPU) :
 
 ```bash
 .venv/bin/python -m screener
 ```
+
+L'interface Gradio est servie sur http://127.0.0.1:7860.
 
 # Exemples de requêtes
 
@@ -142,7 +144,7 @@ Transport stdio (utilisé par Cursor et autres clients MCP) :
 ```
 src/screener/
 ├── __main__.py        # Point d'entrée (python -m screener)
-├── server.py          # Serveur MCP : déclaration des outils et ressources
+├── server.py          # Application Gradio : déclaration des onglets/outils
 ├── screening.py       # Scoring quantitatif (momentum, qualité, croissance, valorisation, consensus)
 ├── universes.py       # Univers de tickers prédéfinis (CAC 40, S&P 100, Nasdaq mega)
 ├── portfolio.py       # Analyse de portefeuille Boursobank et conseils BUY/HOLD/SELL
